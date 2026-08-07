@@ -7,14 +7,26 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"runtime/debug"
 	"strings"
 
 	"github.com/hostvaultio/egglint/lint"
 	"github.com/hostvaultio/egglint/report"
 )
 
-// version is overwritten at build time with the release tag.
+// version is overwritten at build time with the release tag. Release binaries
+// set it via -ldflags; `go install` does not, so it falls back to the module
+// version the binary was built from.
 var version = "dev"
+
+func init() {
+	if version != "dev" {
+		return
+	}
+	if bi, ok := debug.ReadBuildInfo(); ok && bi.Main.Version != "" && bi.Main.Version != "(devel)" {
+		version = bi.Main.Version
+	}
+}
 
 const toolURI = "https://github.com/hostvaultio/egglint"
 
