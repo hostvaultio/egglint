@@ -1,0 +1,92 @@
+{
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-01-01T00:00:00Z",
+    "name": "Problems",
+    "author": "Not An Email",
+    "uuid": "not-a-uuid",
+    "description": "Deliberately broken egg exercising many rules at once.",
+    "features": [],
+    "docker_images": {
+        "Latest": "ghcr.io/example/server"
+    },
+    "file_denylist": "",
+    "startup": "./server --config {{CONFIG_FILE}} --port {{SERVER_PORT}}",
+    "config": {
+        "files": "{not valid json}",
+        "startup": "{\"done\":\"Ready\"}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\ncd /mnt/server\ncurl -o server.tar.gz https://example.com/server.tar.gz\ntar -xzf server.tar.gz\n",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Duplicate One",
+            "description": "First declaration.",
+            "env_variable": "DUPE",
+            "default_value": "a",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Duplicate Two",
+            "description": "Second declaration of the same env variable.",
+            "env_variable": "DUPE",
+            "default_value": "b",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Bad Name",
+            "description": "Not a valid shell identifier.",
+            "env_variable": "not-valid",
+            "default_value": "x",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Shadows Panel Variable",
+            "description": "Collides with a variable wings provides.",
+            "env_variable": "SERVER_MEMORY",
+            "default_value": "1024",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|integer",
+            "field_type": "text"
+        },
+        {
+            "name": "No Rules",
+            "description": "Missing validation rules entirely.",
+            "env_variable": "UNVALIDATED",
+            "default_value": "x",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "",
+            "field_type": "text"
+        },
+        {
+            "name": "Required But Empty",
+            "description": "Required with no usable default.",
+            "env_variable": "MUST_SET",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        }
+    ]
+}

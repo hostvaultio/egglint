@@ -1,0 +1,43 @@
+{
+    "_comment": "A minimal, correct egg used as the clean baseline in tests.",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-01-01T00:00:00Z",
+    "name": "Example",
+    "author": "eggs@example.com",
+    "uuid": "3b843ee7-11f7-4d56-9761-809a68461352",
+    "description": "A well-formed example egg.",
+    "features": [],
+    "docker_images": {
+        "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
+    },
+    "file_denylist": [],
+    "startup": "java -Xms128M -jar {{SERVER_JARFILE}}",
+    "config": {
+        "files": "{\"server.properties\":{\"parser\":\"properties\",\"find\":{\"server-port\":\"{{server.build.default.port}}\"}}}",
+        "startup": "{\"done\":\")! For help, type \"}",
+        "logs": "{}",
+        "stop": "stop"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\nset -euo pipefail\ncd /mnt/server\ncurl -fsSL -o \"${SERVER_JARFILE}\" \"https://example.com/server.jar\"\nif [ ! -s \"${SERVER_JARFILE}\" ]; then\n  echo \"download failed\"\n  exit 1\nfi\n",
+            "container": "ghcr.io/pterodactyl/installers:debian",
+            "entrypoint": "bash"
+        }
+    },
+    "variables": [
+        {
+            "name": "Server Jar File",
+            "description": "The name of the server jarfile to run the server with.",
+            "env_variable": "SERVER_JARFILE",
+            "default_value": "server.jar",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|regex:/^([\\w\\d._-]+)(\\.jar)$/",
+            "field_type": "text"
+        }
+    ]
+}

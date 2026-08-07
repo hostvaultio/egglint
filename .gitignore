@@ -1,0 +1,4 @@
+/dist/
+/egglint
+*.sarif
+coverage.out

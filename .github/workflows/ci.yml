@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      # The syntax-check rule shells out to the interpreter an egg declares, so
+      # the runner needs all of them for the suite to exercise the real paths
+      # rather than the stand-in fallbacks.
+      - name: Install shells
+        run: sudo apt-get update && sudo apt-get install -y dash busybox
+
+      - name: Verify formatting
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files need gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -race -coverprofile=coverage.out ./...
+
+      - name: Coverage summary
+        run: go tool cover -func=coverage.out | tail -1
+
+      - name: Build
+        run: go build ./...
+
+  dogfood:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.22"
+          cache: true
+
+      # The clean fixture must stay clean, and the deliberately broken one must
+      # keep failing. Together these prove the CLI's exit codes work end to end.
+      #
+      # --config /dev/null bypasses this repository's own .egglint.yaml, which
+      # excludes testdata/ so that a repo-wide run does not report the fixtures
+      # that are broken on purpose.
+      - name: Clean fixture passes
+        run: go run ./cmd/egglint --config /dev/null testdata/eggs/clean.json
+
+      - name: Broken fixture fails
+        run: |
+          if go run ./cmd/egglint --config /dev/null testdata/eggs/problems.json; then
+            echo "expected a non-zero exit for the broken fixture"
+            exit 1
+          fi
+
+      - name: Non-egg JSON is skipped, not reported
+        run: |
+          out=$(go run ./cmd/egglint --config /dev/null --fail-on never \
+                  --format json testdata/eggs/not-an-egg.json)
+          echo "$out" | grep -q '"skipped": true' || {
+            echo "expected the non-egg file to be skipped:"; echo "$out"; exit 1; }
+
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the action image
+        run: docker build -t egglint:ci .
+
+      # Positional args mirror action.yml's order:
+      # paths format output fail-on config disable all-files args
+      - name: Clean fixture passes through the action
+        run: |
+          docker run --rm -v "$PWD:/w" -w /w egglint:ci \
+            testdata/eggs/clean.json text "" error /dev/null "" false ""
+
+      - name: Broken fixture fails through the action
+        run: |
+          if docker run --rm -v "$PWD:/w" -w /w egglint:ci \
+               testdata/eggs/problems.json text "" error /dev/null "" false ""; then
+            echo "expected the action to fail on the broken fixture"
+            exit 1
+          fi

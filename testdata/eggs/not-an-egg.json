@@ -1,0 +1,6 @@
+{
+    "WorldName": "Example",
+    "Difficulty": "Normal",
+    "MaxPlayers": 10,
+    "_note": "A game configuration file of the kind published egg repositories keep alongside eggs. It must be skipped, not reported as a broken egg."
+}

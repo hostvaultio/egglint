@@ -1,0 +1,6 @@
+# egglint configuration for this repository.
+#
+# The fixtures under testdata/ are deliberately broken — they exist to prove the
+# rules fire — so they are excluded from any repository-wide run.
+exclude:
+  - "testdata/**"

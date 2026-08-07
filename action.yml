@@ -1,0 +1,54 @@
+name: egglint
+description: Lint Pterodactyl and Pelican eggs for problems that break import, installation or startup.
+author: Hostvault
+
+branding:
+  icon: check-circle
+  color: green
+
+inputs:
+  paths:
+    description: Files or directories to lint, space separated.
+    required: false
+    default: "."
+  format:
+    description: "Output format: text, json, github or sarif."
+    required: false
+    default: github
+  output:
+    description: Write the report to this file instead of stdout.
+    required: false
+    default: ""
+  fail-on:
+    description: "Lowest severity that fails the job: error, warning, info, or never."
+    required: false
+    default: error
+  config:
+    description: Path to a config file. Defaults to .egglint.yaml when present.
+    required: false
+    default: ""
+  disable:
+    description: Comma-separated rule IDs or names to switch off.
+    required: false
+    default: ""
+  all-files:
+    description: Lint JSON files that are not egg exports.
+    required: false
+    default: "false"
+  args:
+    description: Additional flags passed through verbatim.
+    required: false
+    default: ""
+
+runs:
+  using: docker
+  image: Dockerfile
+  args:
+    - ${{ inputs.paths }}
+    - ${{ inputs.format }}
+    - ${{ inputs.output }}
+    - ${{ inputs.fail-on }}
+    - ${{ inputs.config }}
+    - ${{ inputs.disable }}
+    - ${{ inputs.all-files }}
+    - ${{ inputs.args }}
